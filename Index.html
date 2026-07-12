@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08111e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Gridiron Frankenstein</title>
+<style>
+:root{--bg:#07101b;--panel:#0c1d30;--panel2:#122b45;--line:#284966;--gold:#ffbe2e;--white:#f7f9fc;--muted:#9eb2c6;--green:#22cb73;--red:#f05261;--safe:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}body{margin:0;min-height:100vh;min-height:100dvh;color:var(--white);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% -12%,#285d8b 0,transparent 35%),linear-gradient(160deg,#030810,#091a2b 60%,#06101b)}
+button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}
+.app{width:min(780px,100%);margin:auto;padding:12px 11px calc(26px + var(--safe))}
+header{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 4px 18px}header h1{margin:0;font-size:clamp(27px,8vw,47px);line-height:.95;letter-spacing:-.045em}
+.kicker{margin:0 0 4px;color:var(--gold);font-size:11px;font-weight:950;letter-spacing:.16em;text-transform:uppercase}
+.ball{width:58px;height:38px;border-radius:54%;background:#9e4d25;border:3px solid #d88b4c;transform:rotate(-18deg);position:relative}.ball:after{content:"||||";position:absolute;left:17px;top:8px;color:white;letter-spacing:1px;transform:rotate(90deg);font-weight:900;font-size:12px}
+.card{min-height:550px;background:rgba(8,25,42,.97);border:1px solid var(--line);border-radius:21px;padding:21px;box-shadow:0 24px 68px rgba(0,0,0,.44)}
+.hidden{display:none!important}.center{text-align:center}h2{margin:5px 0 9px;font-size:clamp(29px,7vw,43px);letter-spacing:-.035em}.muted{color:var(--muted);line-height:1.48}
+.primary,.secondary{width:100%;min-height:54px;border-radius:13px;padding:14px 16px;font-weight:950;font-size:17px}.primary{border:0;background:var(--gold);color:#171000}.secondary{border:2px solid var(--line);background:var(--panel2);color:#fff}
+.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:22px 0}.pos{border:2px solid var(--line);background:var(--panel2);color:#fff;border-radius:15px;padding:17px 6px}.pos b{display:block;font-size:24px}.pos span{color:var(--muted);font-size:11px}.pos.selected{border-color:var(--gold)}
+label{display:block;text-align:left;font-weight:850;margin:18px 0}input{display:block;width:100%;margin-top:8px;padding:15px;border:2px solid var(--line);border-radius:13px;background:#071725;color:white;outline:none;font-size:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}.chip{background:#112e4a;border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900}
+.progress{height:9px;background:#18334b;border-radius:999px;overflow:hidden;margin:16px 0 20px}.progress div{height:100%;width:0;background:var(--gold);transition:.25s}
+.slot{background:#081a2b;border:1px solid var(--line);border-radius:16px;padding:19px;margin:18px 0;min-height:232px;display:grid;place-items:center}
+.team-logo{font-size:54px}.team-name{font-size:24px;font-weight:950}.depth{display:inline-block;margin:7px 0;background:#173853;border-radius:999px;padding:5px 9px;font-size:11px;color:var(--muted);font-weight:900}
+.player-name{font-size:31px;font-weight:950}.rating{font-size:65px;line-height:1;color:var(--gold);font-weight:950}.rating-label{font-size:11px;color:var(--muted)}
+.spin-anim{animation:pulse .16s linear infinite}@keyframes pulse{50%{opacity:.45;transform:scale(.98)}}
+.warning{background:#2b2410;border:1px solid #7d651d;border-radius:12px;padding:11px;color:#e9dcae;font-size:12px;margin:12px 0}
+.build-list{display:grid;gap:8px;margin:18px 0}.build-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:#102a44;border:1px solid var(--line);border-radius:11px;padding:11px}.build-row b{color:var(--gold)}
+.overall{width:174px;height:174px;border-radius:50%;display:grid;place-items:center;margin:18px auto;background:#0d2945;border:10px solid var(--gold);box-shadow:0 0 34px rgba(255,190,46,.2)}.overall b{font-size:58px;display:block}.overall span{font-size:11px;color:var(--muted)}
+.team{background:linear-gradient(145deg,#153e64,#0c2137);border:2px solid var(--gold);border-radius:18px;padding:19px;text-align:center;margin:18px 0}.logo{font-size:52px}.teamname{font-size:28px;font-weight:950}.teammeta{font-size:12px;color:var(--muted)}
+.roster,.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.roster div,.stat{background:#071827;border:1px solid #183b57;border-radius:10px;padding:10px;font-size:11px}.roster b,.stat b{display:block;color:var(--gold);font-size:19px}
+.record{font-size:28px;font-weight:950;color:var(--gold)}.log{display:grid;gap:8px;max-height:420px;overflow:auto;margin:18px 0}.game{display:grid;grid-template-columns:48px 1fr auto;gap:9px;align-items:center;background:#102a44;border:1px solid var(--line);border-radius:11px;padding:11px}.wk{font-size:11px;color:var(--muted)}.win{color:var(--green)}.loss{color:var(--red)}.line{font-size:11px;color:#d7e3ec;text-align:right}.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.playoff{background:#102a44;border:1px solid var(--line);border-radius:12px;padding:14px;margin:9px 0}.playoff.won{border-color:var(--green)}.playoff.lost{border-color:var(--red)}.trophy{font-size:76px}
+
+
+.trait-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.trait-choice{border:2px solid var(--line);background:#102d4a;color:#fff;border-radius:12px;padding:12px;text-align:left;min-height:76px}
+.trait-choice:hover{border-color:var(--gold)}
+.trait-choice b{display:block;font-size:16px}
+.trait-choice span{display:block;color:var(--gold);font-size:24px;font-weight:950;margin-top:3px}
+.respin-row{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;margin-top:10px}
+.respin-row .secondary{min-height:48px}
+@media(max-width:540px){.trait-choice-grid{grid-template-columns:1fr}.respin-row{grid-template-columns:1fr}}
+
+.reel-title{font-size:11px;color:var(--gold);font-weight:950;letter-spacing:.14em;margin-bottom:7px}
+.reel{width:100%;background:#0d2740;border:2px solid var(--line);border-radius:13px;padding:14px;min-height:92px;display:grid;place-items:center;overflow:hidden}
+.reel.spinning{animation:reelShake .11s linear infinite}
+.reel-divider{margin:10px 0;color:var(--muted);font-size:10px;font-weight:950;letter-spacing:.18em}
+@keyframes reelShake{0%{transform:translateY(-2px)}50%{transform:translateY(2px)}100%{transform:translateY(-2px)}}
+
+@media(max-width:540px){.card{padding:18px;border-radius:18px}.game{grid-template-columns:42px 1fr}.line{grid-column:2;text-align:left}.controls{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="app">
+<header><div class="ball"></div><div><p class="kicker">Random team • Random depth chart</p><h1>Gridiron Frankenstein</h1></div></header>
+
+<section id="start" class="card center">
+<p class="kicker">Hard mode</p><h2>Build from the entire depth chart</h2>
+<p class="muted">Each round spins a random team and depth-chart player. After the player lands, you choose which unused trait to take from them. You also get two respins for the entire build.</p>
+<div class="pos-grid">
+<button class="pos selected" data-pos="QB"><b>QB</b><span>8 quarterback traits</span></button>
+<button class="pos" data-pos="RB"><b>RB</b><span>8 running back traits</span></button>
+<button class="pos" data-pos="WR"><b>WR</b><span>8 receiver traits</span></button>
+</div>
+<label>Created player name<input id="name" maxlength="18" placeholder="Greg Alfano"></label>
+<div class="warning">Elite players are uncommon. Backups and lower-rated depth players have the same chance to be selected as starters within each team pool.</div>
+<button id="begin" class="primary">Begin hard-mode build</button>
+</section>
+
+<section id="draw" class="card hidden center">
+<div class="top"><span id="posChip" class="chip">QB BUILD</span><span id="stepChip" class="chip">1 / 8</span></div>
+<div class="progress"><div id="bar"></div></div>
+<p class="kicker">Current category</p><h2 id="trait"></h2><p id="desc" class="muted"></p>
+<div class="slot">
+  <div class="reel-title">TEAM SPIN</div>
+  <div id="teamReel" class="reel">
+    <div>
+      <div class="team-logo">🎰</div>
+      <div class="team-name">Tap spin</div>
+    </div>
+  </div>
+
+  <div class="reel-divider">THEN</div>
+
+  <div class="reel-title">PLAYER SPIN</div>
+  <div id="playerReel" class="reel">
+    <div class="player-name">Waiting for team…</div>
+  </div>
+</div>
+<button id="drawBtn" class="primary">Spin team & player</button>
+
+<div id="traitChoicePanel" class="hidden">
+  <p class="kicker">Choose one unused trait from this player</p>
+  <div id="traitChoices" class="trait-choice-grid"></div>
+  <div class="respin-row">
+    <button id="respinBtn" class="secondary">Use respin</button>
+    <span id="respinCount" class="chip">2 respins left</span>
+  </div>
+</div>
+</section>
+
+<section id="built" class="card center hidden">
+<p class="kicker">Build complete</p><h2 id="builtName"></h2><div class="overall"><div><b id="ovr"></b><span>OVERALL</span></div></div>
+<p id="grade" class="muted"></p><div id="buildList" class="build-list"></div><button id="draftBtn" class="primary">Generate franchise</button>
+</section>
+
+<section id="draft" class="card hidden">
+<p class="kicker">Your franchise</p><h2>Team generated</h2><div class="team"><div id="logo" class="logo"></div><div id="teamname" class="teamname"></div><div id="teammeta" class="teammeta"></div><div id="roster" class="roster"></div></div>
+<p id="story" class="muted"></p><button id="seasonBtn" class="primary">Simulate season</button>
+</section>
+
+<section id="season" class="card hidden">
+<div class="top"><div><p class="kicker">Regular season</p><h2 id="seasonTeam"></h2></div><div id="record" class="record">0-0</div></div>
+<div id="log" class="log"></div><div class="controls"><button id="next" class="secondary">Sim next week</button><button id="all" class="primary">Sim all 17 games</button></div>
+</section>
+
+<section id="playoffs" class="card hidden">
+<p class="kicker">Postseason</p><h2>Road to the championship</h2><p id="playoffIntro" class="muted"></p><div id="playoffLog"></div><button id="playoffBtn" class="primary">Sim Wild Card</button>
+</section>
+
+<section id="final" class="card center hidden">
+<div id="trophy" class="trophy">🏆</div><p class="kicker">Final result</p><h2 id="finalTitle"></h2><p id="finalText" class="muted"></p><div id="finalStats" class="stats"></div><button id="again" class="primary">Build another player</button>
+</section>
+</main>
+<script>
+const TRAITS={
+QB:[["Arm Strength","Deep velocity and tight-window power"],["Accuracy","Ball placement at every level"],["Legs","Rushing and escape ability"],["Pocket Presence","Movement and pressure awareness"],["Decision Making","Reading coverage and limiting mistakes"],["Leadership","Commanding the huddle"],["Clutch","Late-game performance"],["Durability","Availability over a full season"]],
+RB:[["Speed","Long speed and acceleration"],["Power","Finishing through contact"],["Vision","Reading blocks and leverage"],["Hands","Receiving out of the backfield"],["Elusiveness","Making defenders miss"],["Pass Protection","Keeping the quarterback clean"],["Leadership","Setting the offensive tone"],["Durability","Handling a heavy workload"]],
+WR:[["Speed","Vertical burst and acceleration"],["Hands","Securing difficult catches"],["Route Running","Creating separation with precision"],["Release","Beating press coverage"],["Contested Catch","Winning when covered"],["YAC","Creating yards after the catch"],["Football IQ","Finding space against coverage"],["Clutch","Delivering in big moments"]]
+};
+
+/*
+ Ratings are fictional gameplay values. Each team has starters and depth options.
+ The roster pool is intentionally broad rather than star-only.
+*/
+const ROSTERS=[
+["Arizona Cardinals","🐦",{
+ QB:[["Kyler Murray",87,"Starter"],["Jacoby Brissett",73,"Backup"]],
+ RB:[["James Conner",84,"Starter"],["Trey Benson",76,"Rotation"]],
+ WR:[["Marvin Harrison Jr.",88,"Starter"],["Michael Wilson",78,"Starter"],["Greg Dortch",72,"Depth"]]}],
+["Atlanta Falcons","🦅",{
+ QB:[["Michael Penix Jr.",82,"Starter"],["Kirk Cousins",78,"Veteran backup"]],
+ RB:[["Bijan Robinson",94,"Starter"],["Tyler Allgeier",78,"Backup"]],
+ WR:[["Drake London",89,"Starter"],["Darnell Mooney",80,"Starter"],["Ray-Ray McCloud",72,"Depth"]]}],
+["Baltimore Ravens","🐦‍⬛",{
+ QB:[["Lamar Jackson",97,"Starter"],["Cooper Rush",72,"Backup"]],
+ RB:[["Derrick Henry",94,"Starter"],["Justice Hill",75,"Backup"]],
+ WR:[["Zay Flowers",87,"Starter"],["Rashod Bateman",79,"Starter"],["DeAndre Hopkins",80,"Rotation"]]}],
+["Buffalo Bills","🦬",{
+ QB:[["Josh Allen",98,"Starter"],["Mitchell Trubisky",70,"Backup"]],
+ RB:[["James Cook",89,"Starter"],["Ray Davis",76,"Backup"]],
+ WR:[["Khalil Shakir",84,"Starter"],["Keon Coleman",80,"Starter"],["Curtis Samuel",74,"Rotation"]]}],
+["Carolina Panthers","🐆",{
+ QB:[["Bryce Young",82,"Starter"],["Andy Dalton",71,"Backup"]],
+ RB:[["Chuba Hubbard",84,"Starter"],["Jonathon Brooks",76,"Rotation"]],
+ WR:[["Tetairoa McMillan",82,"Starter"],["Xavier Legette",76,"Starter"],["Adam Thielen",79,"Veteran"]]}],
+["Chicago Bears","🐻",{
+ QB:[["Caleb Williams",86,"Starter"],["Tyson Bagent",70,"Backup"]],
+ RB:[["D'Andre Swift",82,"Starter"],["Roschon Johnson",73,"Backup"]],
+ WR:[["DJ Moore",88,"Starter"],["Rome Odunze",84,"Starter"],["Luther Burden III",78,"Rotation"]]}],
+["Cincinnati Bengals","🐅",{
+ QB:[["Joe Burrow",97,"Starter"],["Jake Browning",72,"Backup"]],
+ RB:[["Chase Brown",84,"Starter"],["Samaje Perine",73,"Backup"]],
+ WR:[["Ja'Marr Chase",98,"Starter"],["Tee Higgins",90,"Starter"],["Andrei Iosivas",73,"Depth"]]}],
+["Cleveland Browns","🟤",{
+ QB:[["Joe Flacco",75,"Veteran"],["Kenny Pickett",72,"Competition"],["Dillon Gabriel",70,"Rookie"]],
+ RB:[["Jerome Ford",77,"Rotation"],["Quinshon Judkins",79,"Rookie"]],
+ WR:[["Jerry Jeudy",84,"Starter"],["Cedric Tillman",75,"Starter"],["Diontae Johnson",76,"Rotation"]]}],
+["Dallas Cowboys","⭐",{
+ QB:[["Dak Prescott",90,"Starter"],["Joe Milton III",70,"Backup"]],
+ RB:[["Javonte Williams",77,"Starter"],["Jaydon Blue",72,"Rookie"]],
+ WR:[["CeeDee Lamb",96,"Starter"],["George Pickens",87,"Starter"],["Jalen Tolbert",74,"Depth"]]}],
+["Denver Broncos","🐴",{
+ QB:[["Bo Nix",87,"Starter"],["Jarrett Stidham",70,"Backup"]],
+ RB:[["RJ Harvey",78,"Rookie"],["Jaleel McLaughlin",72,"Rotation"]],
+ WR:[["Courtland Sutton",87,"Starter"],["Marvin Mims Jr.",81,"Starter"],["Troy Franklin",73,"Depth"]]}],
+["Detroit Lions","🦁",{
+ QB:[["Jared Goff",91,"Starter"],["Hendon Hooker",70,"Backup"]],
+ RB:[["Jahmyr Gibbs",95,"Starter"],["David Montgomery",86,"Rotation"]],
+ WR:[["Amon-Ra St. Brown",95,"Starter"],["Jameson Williams",86,"Starter"],["Kalif Raymond",71,"Depth"]]}],
+["Green Bay Packers","🧀",{
+ QB:[["Jordan Love",88,"Starter"],["Malik Willis",73,"Backup"]],
+ RB:[["Josh Jacobs",90,"Starter"],["MarShawn Lloyd",72,"Backup"]],
+ WR:[["Jayden Reed",84,"Starter"],["Romeo Doubs",80,"Starter"],["Dontayvion Wicks",75,"Rotation"]]}],
+["Houston Texans","🤘",{
+ QB:[["C.J. Stroud",90,"Starter"],["Davis Mills",71,"Backup"]],
+ RB:[["Joe Mixon",86,"Starter"],["Dameon Pierce",72,"Backup"]],
+ WR:[["Nico Collins",93,"Starter"],["Christian Kirk",82,"Starter"],["Jayden Higgins",76,"Rookie"]]}],
+["Indianapolis Colts","🐎",{
+ QB:[["Anthony Richardson",79,"Starter"],["Daniel Jones",75,"Competition"]],
+ RB:[["Jonathan Taylor",91,"Starter"],["Tyler Goodson",70,"Backup"]],
+ WR:[["Michael Pittman Jr.",85,"Starter"],["Josh Downs",83,"Starter"],["Alec Pierce",77,"Starter"]]}],
+["Jacksonville Jaguars","🐆",{
+ QB:[["Trevor Lawrence",86,"Starter"],["Nick Mullens",70,"Backup"]],
+ RB:[["Travis Etienne Jr.",82,"Starter"],["Tank Bigsby",76,"Rotation"]],
+ WR:[["Brian Thomas Jr.",92,"Starter"],["Travis Hunter",84,"Rookie"],["Dyami Brown",73,"Depth"]]}],
+["Kansas City Chiefs","🏹",{
+ QB:[["Patrick Mahomes",99,"Starter"],["Gardner Minshew",73,"Backup"]],
+ RB:[["Isiah Pacheco",84,"Starter"],["Kareem Hunt",77,"Rotation"]],
+ WR:[["Rashee Rice",87,"Starter"],["Xavier Worthy",85,"Starter"],["Marquise Brown",78,"Rotation"]]}],
+["Las Vegas Raiders","☠️",{
+ QB:[["Geno Smith",84,"Starter"],["Aidan O'Connell",71,"Backup"]],
+ RB:[["Ashton Jeanty",88,"Rookie starter"],["Zamir White",71,"Backup"]],
+ WR:[["Jakobi Meyers",84,"Starter"],["Tre Tucker",74,"Starter"],["Jack Bech",76,"Rookie"]]}],
+["Los Angeles Chargers","⚡",{
+ QB:[["Justin Herbert",94,"Starter"],["Trey Lance",69,"Backup"]],
+ RB:[["Najee Harris",81,"Starter"],["Omarion Hampton",82,"Rookie"]],
+ WR:[["Ladd McConkey",90,"Starter"],["Quentin Johnston",78,"Starter"],["Tre Harris",75,"Rookie"]]}],
+["Los Angeles Rams","🐏",{
+ QB:[["Matthew Stafford",90,"Starter"],["Jimmy Garoppolo",72,"Backup"]],
+ RB:[["Kyren Williams",88,"Starter"],["Blake Corum",75,"Backup"]],
+ WR:[["Puka Nacua",94,"Starter"],["Davante Adams",91,"Starter"],["Tutu Atwell",73,"Depth"]]}],
+["Miami Dolphins","🐬",{
+ QB:[["Tua Tagovailoa",88,"Starter"],["Zach Wilson",70,"Backup"]],
+ RB:[["De'Von Achane",91,"Starter"],["Jaylen Wright",75,"Backup"]],
+ WR:[["Tyreek Hill",94,"Starter"],["Jaylen Waddle",88,"Starter"],["Nick Westbrook-Ikhine",73,"Depth"]]}],
+["Minnesota Vikings","🟣",{
+ QB:[["J.J. McCarthy",81,"Starter"],["Sam Howell",71,"Backup"]],
+ RB:[["Aaron Jones",84,"Starter"],["Jordan Mason",78,"Rotation"]],
+ WR:[["Justin Jefferson",99,"Starter"],["Jordan Addison",85,"Starter"],["Jalen Nailor",73,"Depth"]]}],
+["New England Patriots","🇺🇸",{
+ QB:[["Drake Maye",88,"Starter"],["Joshua Dobbs",70,"Backup"]],
+ RB:[["Rhamondre Stevenson",82,"Starter"],["TreVeyon Henderson",80,"Rookie"]],
+ WR:[["Stefon Diggs",87,"Starter"],["DeMario Douglas",77,"Starter"],["Kyle Williams",74,"Rookie"]]}],
+["New Orleans Saints","⚜️",{
+ QB:[["Tyler Shough",75,"Rookie"],["Spencer Rattler",71,"Competition"]],
+ RB:[["Alvin Kamara",88,"Starter"],["Kendre Miller",73,"Backup"]],
+ WR:[["Chris Olave",88,"Starter"],["Rashid Shaheed",81,"Starter"],["Brandin Cooks",76,"Veteran"]]}],
+["New York Giants","🔵",{
+ QB:[["Russell Wilson",80,"Starter"],["Jaxson Dart",77,"Rookie"],["Jameis Winston",73,"Backup"]],
+ RB:[["Tyrone Tracy Jr.",80,"Starter"],["Cam Skattebo",75,"Rookie"]],
+ WR:[["Malik Nabers",93,"Starter"],["Darius Slayton",79,"Starter"],["Wan'Dale Robinson",78,"Slot"]]}],
+["New York Jets","✈️",{
+ QB:[["Justin Fields",82,"Starter"],["Tyrod Taylor",72,"Backup"]],
+ RB:[["Breece Hall",88,"Starter"],["Braelon Allen",76,"Backup"]],
+ WR:[["Garrett Wilson",92,"Starter"],["Josh Reynolds",76,"Starter"],["Allen Lazard",72,"Depth"]]}],
+["Philadelphia Eagles","🦅",{
+ QB:[["Jalen Hurts",93,"Starter"],["Tanner McKee",72,"Backup"]],
+ RB:[["Saquon Barkley",98,"Starter"],["Will Shipley",73,"Backup"]],
+ WR:[["A.J. Brown",94,"Starter"],["DeVonta Smith",89,"Starter"],["Jahan Dotson",74,"Depth"]]}],
+["Pittsburgh Steelers","🟡",{
+ QB:[["Mason Rudolph",73,"Competition"],["Will Howard",70,"Rookie"]],
+ RB:[["Jaylen Warren",82,"Starter"],["Kaleb Johnson",77,"Rookie"]],
+ WR:[["DK Metcalf",91,"Starter"],["Calvin Austin III",75,"Starter"],["Roman Wilson",72,"Depth"]]}],
+["San Francisco 49ers","⛏️",{
+ QB:[["Brock Purdy",91,"Starter"],["Mac Jones",72,"Backup"]],
+ RB:[["Christian McCaffrey",94,"Starter"],["Isaac Guerendo",75,"Backup"]],
+ WR:[["Brandon Aiyuk",87,"Starter"],["Jauan Jennings",82,"Starter"],["Ricky Pearsall",79,"Rotation"]]}],
+["Seattle Seahawks","🦅",{
+ QB:[["Sam Darnold",86,"Starter"],["Drew Lock",70,"Backup"]],
+ RB:[["Kenneth Walker III",86,"Starter"],["Zach Charbonnet",78,"Rotation"]],
+ WR:[["Jaxon Smith-Njigba",91,"Starter"],["Cooper Kupp",86,"Starter"],["Marquez Valdes-Scantling",72,"Depth"]]}],
+["Tampa Bay Buccaneers","🏴‍☠️",{
+ QB:[["Baker Mayfield",90,"Starter"],["Kyle Trask",69,"Backup"]],
+ RB:[["Bucky Irving",89,"Starter"],["Rachaad White",80,"Rotation"]],
+ WR:[["Mike Evans",91,"Starter"],["Chris Godwin",88,"Starter"],["Emeka Egbuka",79,"Rookie"]]}],
+["Tennessee Titans","⚔️",{
+ QB:[["Cam Ward",82,"Rookie starter"],["Brandon Allen",69,"Backup"]],
+ RB:[["Tony Pollard",83,"Starter"],["Tyjae Spears",78,"Rotation"]],
+ WR:[["Calvin Ridley",85,"Starter"],["Tyler Lockett",80,"Veteran"],["Elic Ayomanor",73,"Rookie"]]}],
+["Washington Commanders","🛡️",{
+ QB:[["Jayden Daniels",94,"Starter"],["Marcus Mariota",72,"Backup"]],
+ RB:[["Brian Robinson Jr.",83,"Starter"],["Austin Ekeler",79,"Rotation"]],
+ WR:[["Terry McLaurin",91,"Starter"],["Deebo Samuel",85,"Starter"],["Noah Brown",73,"Depth"]]}]
+];
+
+const FRANCHISES=[
+["Brooklyn Bolts","⚡",82,78,80],["Orlando Orbit","🪐",79,84,77],["Austin Outlaws","🤠",85,75,81],["Portland Pioneers","🌲",77,86,80],
+["San Antonio Stampede","🐂",83,79,76],["Omaha Mammoths","🦣",76,82,85],["Columbus Captains","⚓",81,80,81],["Salt Lake Yetis","🏔️",78,83,82]
+];
+const OPP=["Chicago Grizzlies","Miami Waves","Seattle Steel","Dallas Wranglers","Boston Rebels","Phoenix Firebirds","Nashville Notes","Las Vegas Aces","Carolina Flight","Denver Peaks","Detroit Motors","Atlanta Empire","New York Knights","Houston Launch","Los Angeles Stars","Minnesota Frost"];
+
+const $=x=>document.getElementById(x);
+let pos="QB",name="",step=0,picks=[],current=null,team=null,wins=0,losses=0,week=0,stats={},round=0,respins=2,usedTraits=[];
+function show(id){["start","draw","built","draft","season","playoffs","final"].forEach(x=>$(x).classList.toggle("hidden",x!==id));scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll(".pos").forEach(b=>b.onclick=()=>{document.querySelectorAll(".pos").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");pos=b.dataset.pos});
+$("begin").onclick=()=>{name=$("name").value.trim()||"Rookie One";step=0;picks=[];respins=2;usedTraits=[];show("draw");renderTrait()};
+function renderTrait(){
+ $("posChip").textContent=pos+" BUILD";
+ $("stepChip").textContent=`${step+1} / 8`;
+ $("bar").style.width=`${step/8*100}%`;
+ $("trait").textContent="Spin for a player";
+ $("desc").textContent=`After the player lands, choose one of your ${8-usedTraits.length} remaining traits.`;
+ $("teamReel").innerHTML='<div><div class="team-logo">🎰</div><div class="team-name">Tap spin</div></div>';
+ $("playerReel").innerHTML='<div class="player-name">Waiting for team…</div>';
+ $("drawBtn").classList.remove("hidden");
+ $("drawBtn").textContent="Spin team & player";
+ $("traitChoicePanel").classList.add("hidden");
+ $("respinCount").textContent=`${respins} respin${respins===1?"":"s"} left`;
+}
+$("drawBtn").onclick=()=>{
+ $("drawBtn").disabled=true;
+ $("teamReel").classList.add("spinning");
+ $("playerReel").classList.add("spinning");
+ let teamFlashes=0;
+ const teamInterval=setInterval(()=>{
+   const temp=ROSTERS[Math.floor(Math.random()*ROSTERS.length)];
+   $("teamReel").innerHTML=`<div><div class="team-logo">${temp[1]}</div><div class="team-name">${temp[0]}</div></div>`;
+   teamFlashes++;
+   if(teamFlashes>=18){
+     clearInterval(teamInterval);
+     const selectedTeam=ROSTERS[Math.floor(Math.random()*ROSTERS.length)];
+     $("teamReel").classList.remove("spinning");
+     $("teamReel").innerHTML=`<div><div class="team-logo">${selectedTeam[1]}</div><div class="team-name">${selectedTeam[0]}</div></div>`;
+
+     const pool=selectedTeam[2][pos];
+     let playerFlashes=0;
+     const playerInterval=setInterval(()=>{
+       const tempPlayer=pool[Math.floor(Math.random()*pool.length)];
+       $("playerReel").innerHTML=`<div><span class="depth">${tempPlayer[2]}</span><div class="player-name">${tempPlayer[0]}</div><div class="rating">${Math.max(62,Math.min(99,tempPlayer[1]+Math.floor(Math.random()*9)-4))}</div></div>`;
+       playerFlashes++;
+       if(playerFlashes>=15){
+         clearInterval(playerInterval);
+         const p=pool[Math.floor(Math.random()*pool.length)];
+         const traitIndex=step;
+         const variance=Math.floor(Math.random()*11)-5;
+         const specialistBoost=(traitIndex===0||traitIndex===1)?Math.floor(Math.random()*5)-1:Math.floor(Math.random()*7)-3;
+         const rating=Math.max(62,Math.min(99,p[1]+variance+specialistBoost));
+         current={team:selectedTeam[0],logo:selectedTeam[1],player:p[0],depth:p[2],base:p[1]};
+         $("playerReel").classList.remove("spinning");
+         $("playerReel").innerHTML=`<div><span class="depth">${p[2]}</span><div class="player-name">${p[0]}</div><div class="rating">${p[1]}</div><div class="rating-label">BASE PLAYER RATING</div></div>`;
+         $("drawBtn").classList.add("hidden");
+         $("traitChoicePanel").classList.remove("hidden");
+         $("respinCount").textContent=`${respins} respin${respins===1?"":"s"} left`;
+         $("respinBtn").disabled=respins<=0;
+         renderTraitChoices();
+         $("drawBtn").disabled=false;
+       }
+     },95);
+   }
+ },90);
+};
+function traitRating(playerBase, traitName){
+ const all=TRAITS[pos].map(x=>x[0]);
+ const idx=all.indexOf(traitName);
+ const nameSeed=[...current.player].reduce((s,c)=>s+c.charCodeAt(0),0);
+ const spread=((nameSeed + idx*17 + step*11) % 17)-8;
+ const roleBoost =
+   (pos==="QB" && ["Arm Strength","Accuracy","Pocket Presence","Decision Making"].includes(traitName)) ? 2 :
+   (pos==="RB" && ["Speed","Power","Vision","Elusiveness"].includes(traitName)) ? 2 :
+   (pos==="WR" && ["Speed","Hands","Route Running","Release"].includes(traitName)) ? 2 : 0;
+ return Math.max(60,Math.min(99,playerBase+spread+roleBoost));
+}
+
+function renderTraitChoices(){
+ const remaining=TRAITS[pos].map(x=>x[0]).filter(t=>!usedTraits.includes(t));
+ $("traitChoices").innerHTML=remaining.map(trait=>{
+   const rating=traitRating(current.base,trait);
+   return `<button class="trait-choice" data-trait="${trait}" data-rating="${rating}">
+     <b>${trait}</b><span>${rating}</span>
+   </button>`;
+ }).join("");
+ document.querySelectorAll(".trait-choice").forEach(btn=>{
+   btn.onclick=()=>selectTrait(btn.dataset.trait,Number(btn.dataset.rating));
+ });
+}
+
+function selectTrait(trait,rating){
+ picks.push({trait,team:current.team,logo:current.logo,player:current.player,depth:current.depth,rating});
+ usedTraits.push(trait);
+ step++;
+ if(step<8)renderTrait();else renderBuilt();
+}
+
+$("respinBtn").onclick=()=>{
+ if(respins<=0)return;
+ respins--;
+ $("respinCount").textContent=`${respins} respin${respins===1?"":"s"} left`;
+ $("traitChoicePanel").classList.add("hidden");
+ $("drawBtn").classList.remove("hidden");
+ $("drawBtn").textContent="Spin again";
+ $("drawBtn").click();
+};
+
+function overall(){return Math.round(picks.reduce((a,b)=>a+b.rating,0)/picks.length)}
+function renderBuilt(){show("built");const o=overall();$("builtName").textContent=`${name} • ${pos}`;$("ovr").textContent=o;$("grade").textContent=o>=92?"A rare superstar build.":o>=85?"A strong playoff-caliber build.":o>=78?"A solid but flawed starter.":o>=70?"A difficult developmental build.":"A true underdog challenge.";$("buildList").innerHTML=picks.map(p=>`<div class="build-row"><span>${p.trait}<br><small>${p.team} • ${p.depth}</small></span><span>${p.player}</span><b>${p.rating}</b></div>`).join("")}
+$("draftBtn").onclick=()=>{team=FRANCHISES[Math.floor(Math.random()*FRANCHISES.length)];show("draft");$("logo").textContent=team[1];$("teamname").textContent=team[0];$("teammeta").textContent=`Team OVR ${Math.round((team[2]+team[3]+team[4])/3)} • Player ${overall()} OVR`;$("roster").innerHTML=`<div><b>${team[2]}</b>Pass offense</div><div><b>${team[3]}</b>Run offense</div><div><b>${team[4]}</b>Defense</div>`;$("story").textContent=`The ${team[0]} hand the franchise to ${name}. Because the build draws from entire depth charts, every weakness will matter in the season simulation.`};
+$("seasonBtn").onclick=()=>{wins=0;losses=0;week=0;round=0;stats=pos==="QB"?{yards:0,td:0,to:0}:pos==="RB"?{yards:0,td:0,rec:0}:{yards:0,td:0,rec:0};$("log").innerHTML="";$("seasonTeam").textContent=team[0];show("season");updateRecord()};
+function impact(){return (overall()-82)*.65+picks.filter(x=>x.rating>=90).length*.35}
+function sim(playoff=false){const opp=OPP[Math.floor(Math.random()*OPP.length)],base=(team[2]+team[3]+team[4])/3,oppOvr=77+Math.random()*12+(playoff?3:0);let ours=Math.max(7,Math.round(17+(base-78)*.6+impact()+Math.random()*14)),theirs=Math.max(7,Math.round(18+(oppOvr-78)*.8+Math.random()*14));if(ours===theirs)ours+=3;let line="";if(pos==="QB"){const y=Math.round(180+(overall()-72)*6+Math.random()*115),td=Math.max(0,Math.round((ours-8)/11+Math.random())),to=Math.random()<(overall()<78?.55:.32)?1:0;stats.yards+=y;stats.td+=td;stats.to+=to;line=`${y} YDS • ${td} TD • ${to} INT`}if(pos==="RB"){const y=Math.round(40+(overall()-68)*3+Math.random()*72),td=Math.random()<ours/36?1:0,rec=Math.round(Math.random()*5);stats.yards+=y;stats.td+=td;stats.rec+=rec;line=`${y} RUSH YDS • ${td} TD • ${rec} REC`}if(pos==="WR"){const rec=Math.max(1,Math.round(2+(overall()-68)*.18+Math.random()*5)),y=Math.round(rec*(8+Math.random()*8)),td=Math.random()<ours/36?1:0;stats.yards+=y;stats.td+=td;stats.rec+=rec;line=`${rec} REC • ${y} YDS • ${td} TD`}return{opp,ours,theirs,win:ours>theirs,line}}
+function updateRecord(){$("record").textContent=`${wins}-${losses}`;$("next").disabled=week>=17;$("all").disabled=week>=17}
+function add(g){week++;g.win?wins++:losses++;$("log").insertAdjacentHTML("beforeend",`<div class="game"><div class="wk">WK ${week}</div><div><b class="${g.win?"win":"loss"}">${g.win?"W":"L"} ${g.ours}-${g.theirs}</b><div>vs ${g.opp}</div></div><div class="line">${g.line}</div></div>`);$("log").scrollTop=$("log").scrollHeight;updateRecord();if(week>=17)setTimeout(endSeason,500)}
+$("next").onclick=()=>add(sim());$("all").onclick=()=>{const r=()=>{if(week<17){add(sim());setTimeout(r,90)}};r()};
+function endSeason(){if(wins<9&&!(wins===8&&Math.random()<.35)){finish(false,`The ${team[0]} finished ${wins}-${losses} and missed the playoffs.`);return}show("playoffs");$("playoffIntro").textContent=`The ${team[0]} finished ${wins}-${losses}. Four wins stand between this build and a championship.`;$("playoffLog").innerHTML="";$("playoffBtn").classList.remove("hidden");$("playoffBtn").textContent="Sim Wild Card"}
+$("playoffBtn").onclick=()=>{const names=["Wild Card","Divisional Round","Conference Championship","Championship"],g=sim(true),r=names[round];$("playoffLog").insertAdjacentHTML("beforeend",`<div class="playoff ${g.win?"won":"lost"}"><b>${r}: <span class="${g.win?"win":"loss"}">${g.win?"WIN":"LOSS"} ${g.ours}-${g.theirs}</span></b><div>vs ${g.opp}</div><div class="muted">${name}: ${g.line}</div></div>`);if(!g.win){$("playoffBtn").classList.add("hidden");setTimeout(()=>finish(false,`The season ended in the ${r}.`),650);return}round++;if(round>=4){$("playoffBtn").classList.add("hidden");setTimeout(()=>finish(true,`${name} carried the ${team[0]} to a championship!`),650)}else $("playoffBtn").textContent=`Sim ${names[round]}`};
+function finish(champ,text){show("final");$("trophy").textContent=champ?"🏆":"🏈";$("finalTitle").textContent=champ?"Champions!":"Season Complete";$("finalText").textContent=text;const labels=pos==="QB"?[["PASS YDS",stats.yards],["PASS TD",stats.td],["INT",stats.to]]:pos==="RB"?[["RUSH YDS",stats.yards],["TOTAL TD",stats.td],["REC",stats.rec]]:[["REC YDS",stats.yards],["REC TD",stats.td],["REC",stats.rec]];$("finalStats").innerHTML=labels.map(x=>`<div class="stat"><b>${x[1]}</b>${x[0]}</div>`).join("")}
+$("again").onclick=()=>show("start");
+</script>
+</body>
+</html>
