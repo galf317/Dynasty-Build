@@ -1,0 +1,21 @@
+{
+  "name": "GRIDX",
+  "short_name": "GRIDX",
+  "start_url": "./?source=pwa",
+  "display": "standalone",
+  "background_color": "#020304",
+  "theme_color": "#050805",
+  "description": "Build your football legacy with current players, rookies, legends, multiplayer and career simulation.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

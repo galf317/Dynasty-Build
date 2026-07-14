@@ -1,0 +1,1 @@
+window.LIVE_NFL_PLAYERS=[];window.LIVE_NFL_UPDATED_AT="";(async()=>{try{const r=await fetch("data/live-players.json",{cache:"no-store"});const p=await r.json();window.LIVE_NFL_PLAYERS=p.players||[];window.LIVE_NFL_UPDATED_AT=p.updatedAt||"recently"}catch(e){console.warn(e)}})();
